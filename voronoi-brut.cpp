@@ -3,6 +3,7 @@
 #include <cmath>
 #include <string>
 #include <argparse/argparse.hpp>
+#include <create-random-points.hpp>
 #include <chrono>
 
 using namespace cv;
@@ -35,27 +36,31 @@ double dI (const Point & a, const Point & b) {
         : distanceY;
 }
 
-vector<tuple<Vec3b, Point>> createRandomPoints (Mat & m, int pointCount = 100) {
-    vector<tuple<Vec3b, Point>> randomPoints;
+string distanceNames[] = {
+    "DE",
+    "D1",
+    "DInfinity"
+};
 
-    auto rows = m.rows;
-    auto columns = m.cols;
+const int DISTANCE_DE = 0;
+const int DISTANCE_D1 = 1;
+const int DISTANCE_DI = 2;
 
-    for (auto i = 0; i < pointCount; ++i) {
-        auto randomX = random() % (rows - 1);
-        auto randomY = random() % (columns - 1);
-
-        auto randomRed = random() % 255;
-        auto randomGreen = random() % 255;
-        auto randomBlue = random() % 255;
-
-        randomPoints.emplace_back(Vec3b(randomRed, randomGreen, randomBlue), Point(randomX, randomY));
+double getDistance (int distanceType, const Point & a, const Point & b) {
+    switch(distanceType) {
+        case DISTANCE_D1:
+            return d1(a, b);
+        case DISTANCE_DE:
+            return de(a, b);
+        case DISTANCE_DI:
+            return d1(a, b);
     }
 
-    return randomPoints;
+    return -1;
 }
 
-tuple<time_point<steady_clock>, int> run (int rows, int columns, int pointCount) {
+
+tuple<time_point<steady_clock>, int> run (int rows, int columns, int pointCount, int distanceType) {
 
     int iterationCount = 0;
     Mat i = Mat(rows, columns, CV_8UC3);
@@ -69,7 +74,7 @@ tuple<time_point<steady_clock>, int> run (int rows, int columns, int pointCount)
 
             for (auto & point : randomPoints)
             {
-                const auto currentDistance = de(p, get<1>(point));
+                const auto currentDistance = getDistance(distanceType, p, get<1>(point));
                 ++iterationCount;
 
                 if (currentDistance < lowestDistance) {
@@ -91,7 +96,7 @@ tuple<time_point<steady_clock>, int> run (int rows, int columns, int pointCount)
     return tuple<time_point<steady_clock>, int>(end, iterationCount);
 }
 
-string getArgumentName (string name) {
+string getArgumentName (const string & name) {
     return "--" + name;
 }
 
@@ -102,29 +107,33 @@ int main(int argc, const char ** argv) {
     const string columnCountParameterName = "columnCount";
     const string rowCountParameterName = "rowCount";
     const string pointCountParameterName = "germs";
+    const string distanceTypeParameterName = "distanceType";
 
     argumentParser.addArgument(getArgumentName(columnCountParameterName), 1, false);
     argumentParser.addArgument(getArgumentName(rowCountParameterName), 1, false);
     argumentParser.addArgument(getArgumentName(pointCountParameterName), 1, false);
+    argumentParser.addArgument(getArgumentName(distanceTypeParameterName), 1, false);
 
     argumentParser.parse(argc, argv);
 
     auto columnCountString = argumentParser.retrieve<string>(columnCountParameterName);
     auto rowCountString = argumentParser.retrieve<string>(rowCountParameterName);
     auto pointCountString = argumentParser.retrieve<string>(pointCountParameterName);
+    auto distanceTypeString = argumentParser.retrieve<string>(distanceTypeParameterName);
 
     auto columnCount = stoi(columnCountString);
     auto rowCount = stoi(rowCountString);
     auto pointCount = stoi(pointCountString);
+    auto distanceType = stoi(distanceTypeString);
 
     auto start = high_resolution_clock::now();
-    auto result = run(rowCount, columnCount, pointCount);
+    auto result = run(rowCount, columnCount, pointCount, distanceType);
 
     auto duration = duration_cast<milliseconds>(get<0>(result) - start);
 
     cout
         << "Execution done in " << duration.count() << " ms and " << to_string(get<1>(result)) << " iterations."
-        << " Create a " << rowCountString << " x " << columnCountString << " (" << to_string(columnCount * rowCount) <<  " pixels) image with " << pointCount << " germs." << endl;
+        << " Create a " << rowCountString << " x " << columnCountString << " (" << to_string(columnCount * rowCount) <<  " pixels) image with " << pointCount << " germs and distance " << distanceNames[distanceType] << "." << endl;
 
     return 0;
 }
