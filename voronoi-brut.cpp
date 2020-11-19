@@ -61,7 +61,7 @@ double getDistance (int distanceType, const Point & a, const Point & b) {
 }
 
 
-tuple<time_point<steady_clock>, int> run (int rows, int columns, int pointCount, int distanceType) {
+tuple<time_point<steady_clock>, int> run (int rows, int columns, int pointCount, int distanceType, bool skipImage = false) {
 
     int iterationCount = 0;
     Mat i = Mat(rows, columns, CV_8UC3);
@@ -90,9 +90,12 @@ tuple<time_point<steady_clock>, int> run (int rows, int columns, int pointCount,
 
     auto end = high_resolution_clock::now();
 
-    namedWindow("result", WINDOW_AUTOSIZE);
-    imshow("result", i);
-    waitKey(0);
+    if (!skipImage) {
+
+        namedWindow("result", WINDOW_AUTOSIZE);
+        imshow("result", i);
+        waitKey(0);
+    }
 
     return tuple<time_point<steady_clock>, int>(end, iterationCount);
 }
@@ -106,11 +109,13 @@ int main(int argc, const char ** argv) {
     const string rowCountParameterName = "rowCount";
     const string pointCountParameterName = "germs";
     const string distanceTypeParameterName = "distanceType";
+    const string skipImageString = "skipImage";
 
     argumentParser.addArgument(getArgumentName(columnCountParameterName), 1, false);
     argumentParser.addArgument(getArgumentName(rowCountParameterName), 1, false);
     argumentParser.addArgument(getArgumentName(pointCountParameterName), 1, false);
     argumentParser.addArgument(getArgumentName(distanceTypeParameterName), 1, false);
+    argumentParser.addArgument(getArgumentName(skipImageString), 0, true);
 
     argumentParser.parse(argc, argv);
 
@@ -118,14 +123,15 @@ int main(int argc, const char ** argv) {
     auto rowCountString = argumentParser.retrieve<string>(rowCountParameterName);
     auto pointCountString = argumentParser.retrieve<string>(pointCountParameterName);
     auto distanceTypeString = argumentParser.retrieve<string>(distanceTypeParameterName);
+    auto skipImage = argumentParser.exists(skipImageString);
 
     auto columnCount = stoi(columnCountString);
     auto rowCount = stoi(rowCountString);
-    auto pointCount = stoi(pointCountString);
+    auto pointCount = (int)round(stof(pointCountString));
     auto distanceType = stoi(distanceTypeString);
 
     auto start = high_resolution_clock::now();
-    auto result = run(rowCount, columnCount, pointCount, distanceType);
+    auto result = run(rowCount, columnCount, pointCount, distanceType, skipImage);
 
     auto duration = duration_cast<milliseconds>(get<0>(result) - start);
 
