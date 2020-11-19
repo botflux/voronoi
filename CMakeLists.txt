@@ -13,3 +13,4 @@ add_executable(VoronoiBrut voronoi-brut.cpp)
 add_executable(VoronoiSequential voronoi-sequential.cpp)
 
 target_link_libraries(VoronoiBrut ${OpenCV_LIBS})
+target_link_libraries(VoronoiSequential ${OpenCV_LIBS})

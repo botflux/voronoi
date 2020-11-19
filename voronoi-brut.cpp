@@ -5,6 +5,7 @@
 #include <argparse/argparse.hpp>
 #include <create-random-points.hpp>
 #include <chrono>
+#include <get-argument-name.hpp>
 
 using namespace cv;
 using namespace std;
@@ -96,9 +97,6 @@ tuple<time_point<steady_clock>, int> run (int rows, int columns, int pointCount,
     return tuple<time_point<steady_clock>, int>(end, iterationCount);
 }
 
-string getArgumentName (const string & name) {
-    return "--" + name;
-}
 
 int main(int argc, const char ** argv) {
 
