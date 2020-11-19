@@ -32,7 +32,7 @@ double dI (const Point & a, const Point & b) {
     double distanceX = abs(a.x - b.x);
     double distanceY = abs(a.y - b.y);
 
-    return distanceX > distanceX
+    return distanceX > distanceY
         ? distanceX
         : distanceY;
 }
@@ -54,16 +54,16 @@ double getDistance (int distanceType, const Point & a, const Point & b) {
         case DISTANCE_DE:
             return de(a, b);
         case DISTANCE_DI:
-            return d1(a, b);
+            return dI(a, b);
     }
 
     return -1;
 }
 
 
-tuple<time_point<steady_clock>, int> run (int rows, int columns, int pointCount, int distanceType, bool skipImage = false) {
+tuple<time_point<steady_clock>, unsigned long> run (int rows, int columns, int pointCount, int distanceType, bool skipImage = false) {
 
-    int iterationCount = 0;
+    unsigned long iterationCount = 0;
     Mat i = Mat(rows, columns, CV_8UC3);
     auto randomPoints = createRandomPoints(i, pointCount);
 
@@ -115,7 +115,7 @@ int main(int argc, const char ** argv) {
     argumentParser.addArgument(getArgumentName(rowCountParameterName), 1, false);
     argumentParser.addArgument(getArgumentName(pointCountParameterName), 1, false);
     argumentParser.addArgument(getArgumentName(distanceTypeParameterName), 1, false);
-    argumentParser.addArgument(getArgumentName(skipImageString), 0, true);
+    argumentParser.addArgument(getArgumentName(skipImageString), 1, true);
 
     argumentParser.parse(argc, argv);
 
@@ -123,7 +123,7 @@ int main(int argc, const char ** argv) {
     auto rowCountString = argumentParser.retrieve<string>(rowCountParameterName);
     auto pointCountString = argumentParser.retrieve<string>(pointCountParameterName);
     auto distanceTypeString = argumentParser.retrieve<string>(distanceTypeParameterName);
-    auto skipImage = argumentParser.exists(skipImageString);
+    auto skipImage = argumentParser.retrieve<string>(skipImageString);
 
     auto columnCount = stoi(columnCountString);
     auto rowCount = stoi(rowCountString);
@@ -131,7 +131,7 @@ int main(int argc, const char ** argv) {
     auto distanceType = stoi(distanceTypeString);
 
     auto start = high_resolution_clock::now();
-    auto result = run(rowCount, columnCount, pointCount, distanceType, skipImage);
+    auto result = run(rowCount, columnCount, pointCount, distanceType, !skipImage.empty());
 
     auto duration = duration_cast<milliseconds>(get<0>(result) - start);
 
