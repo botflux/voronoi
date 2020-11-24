@@ -11,6 +11,8 @@ include_directories(libs)
 
 add_executable(VoronoiBrut voronoi-brut.cpp)
 add_executable(VoronoiSequential voronoi-sequential.cpp)
+add_executable(VoronoiKMeans voronoi-k-means.cpp)
 
 target_link_libraries(VoronoiBrut ${OpenCV_LIBS})
 target_link_libraries(VoronoiSequential ${OpenCV_LIBS})
+target_link_libraries(VoronoiKMeans ${OpenCV_LIBS})
