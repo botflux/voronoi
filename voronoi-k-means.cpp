@@ -25,11 +25,11 @@ vector<tuple<Point, int>> createMask () {
 }
 
 int main (int argc, char ** argv) {
-    const int columnCount = 100;
-    const int rowCount = 100;
+    const int columnCount = 300;
+    const int rowCount = 300;
 
-    const int kCount = 100;
-    const int maxIterationCount = 4;
+    const int kCount = 1000;
+    const int maxIterationCount = 6;
 
     Mat voronoi(rowCount, columnCount, CV_8UC3);
     Mat distances(rowCount, columnCount, CV_16UC1);
